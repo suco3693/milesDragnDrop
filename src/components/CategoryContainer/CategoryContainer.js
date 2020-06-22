@@ -10,7 +10,12 @@ const CategoryContainer = (props) => (
         </Row>
         <Row className='dragNDropRow'>
             {props.categories.map((category, idx) => (
-                <Category category={category} key={idx} />
+                <Category
+                    category={category}
+                    key={idx}
+                    preventDragDrop={props.preventDragDrop}
+                    dropCard={props.dropCard}
+                />
             ))}
         </Row>
     </Container>

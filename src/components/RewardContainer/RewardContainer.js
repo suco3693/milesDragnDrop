@@ -6,7 +6,12 @@ const RewardContainer = (props) => (
         <h3>Rewards</h3>
         <div className='RewardContainer'>
             {props.rewards.map((reward) => (
-                <RewardCard rewardName={reward.name} key={reward.value} />
+                <RewardCard
+                    startDrag={props.startDrag}
+                    rewardName={reward.name}
+                    value={reward.value}
+                    key={reward.value}
+                />
             ))}
         </div>
     </div>

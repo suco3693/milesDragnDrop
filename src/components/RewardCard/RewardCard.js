@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from 'react-bootstrap';
 import './RewardCard.css';
 const RewardCard = (props) => (
-    <Card className='RewardCard'>
+    <Card id={props.value} className='RewardCard' draggable='true' onDragStart={props.startDrag}>
         <Card.Body>{props.rewardName}</Card.Body>
     </Card>
 );
