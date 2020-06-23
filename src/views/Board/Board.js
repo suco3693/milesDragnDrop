@@ -128,7 +128,6 @@ class Board extends React.Component {
         if (queue.length) {
             let recentAction = queue.pop();
             let [rewardID, fromCatID, toCatID] = recentAction;
-            console.log('reward', rewardID, 'fromcat', fromCatID, 'tocat', toCatID);
             if (fromCatID) {
                 this.removeRewardFromCat(rewardID, fromCatID);
             }
@@ -146,7 +145,6 @@ class Board extends React.Component {
             let redoAction = backQueue.pop();
             let [rewardID, fromCatID, toCatID] = redoAction;
             //remove reward from toCatID
-            console.log(rewardID, fromCatID, toCatID);
             if (toCatID) {
                 this.removeRewardFromCat(rewardID, toCatID);
             }
@@ -190,8 +188,6 @@ class Board extends React.Component {
         this.state.categories.forEach((category) => {
             rewardMap[category.header] = category.rewards;
         });
-
-        console.log(rewardMap);
         return rewardMap;
     }
     render() {
