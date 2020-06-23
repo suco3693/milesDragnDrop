@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import RewardContainer from '../../components/RewardContainer/RewardContainer';
 import CategoryContainer from '../../components/CategoryContainer/CategoryContainer';
@@ -20,6 +21,7 @@ class Board extends React.Component {
         this.addToQueue = this.addToQueue.bind(this);
         this.undoMove = this.undoMove.bind(this);
         this.redoMove = this.redoMove.bind(this);
+        this.saveRewards = this.saveRewards.bind(this);
     }
     makeRewards(rewardNumber) {
         const rewards = [];
@@ -178,6 +180,20 @@ class Board extends React.Component {
             category.appendChild(rewardCard);
         }
     }
+    saveRewards() {
+        let rewardMap = this.createCatRewardMap();
+        this.props.dispatch({ type: 'Save', data: rewardMap });
+    }
+    createCatRewardMap() {
+        let rewardMap = {};
+
+        this.state.categories.forEach((category) => {
+            rewardMap[category.header] = category.rewards;
+        });
+
+        console.log(rewardMap);
+        return rewardMap;
+    }
     render() {
         return (
             <div className='Board'>
@@ -194,9 +210,16 @@ class Board extends React.Component {
                     <Button className='button' onClick={this.redoMove}>
                         Redo
                     </Button>
+                    <Button className='button' onClick={this.saveRewards}>
+                        Save Rewards
+                    </Button>
                 </div>
             </div>
         );
     }
 }
-export default Board;
+
+const mapStateToProps = (state) => ({
+    state,
+});
+export default connect(mapStateToProps)(Board);
