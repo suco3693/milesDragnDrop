@@ -66,9 +66,10 @@ class Board extends React.Component {
     }
     checkRewardInCol(targetID, rewardID) {
         let categories = this.state.categories;
-        let colNum = targetID.substr(-1);
+        let colNum = parseInt(targetID.substr(-1)) - 1;
 
         let rewardNum = rewardID.substr(-1);
+        console.log(colNum);
         if (categories[colNum].rewards[rewardNum]) {
             return true;
         } else {
