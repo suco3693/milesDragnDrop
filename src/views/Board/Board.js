@@ -43,7 +43,6 @@ class Board extends React.Component {
 
     startDrag(e) {
         e.dataTransfer.setData('card', e.target.id);
-        console.log(e.target.parentElement);
     }
 
     preventDragDrop(e) {
@@ -60,7 +59,9 @@ class Board extends React.Component {
                 e.currentTarget.appendChild(cloneCard);
             }
         } else {
-            e.currentTarget.appendChild(document.getElementById(baseCard));
+            if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
+                e.currentTarget.appendChild(document.getElementById(baseCard));
+            }
         }
     }
     checkRewardInCol(targetID, rewardID) {
