@@ -3,3 +3,11 @@
     flex-direction: row;
     margin: 5em;
 }
+
+.buttonContainer {
+    width: 10%;
+}
+
+.button {
+    margin: 1em;
+}
