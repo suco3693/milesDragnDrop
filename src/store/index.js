@@ -1,6 +1,6 @@
 import { createStore } from 'redux';
 
-const initialState = {
+export const initialState = {
     'Category-1': {
         rewards: {
             '1': false,
@@ -49,9 +49,13 @@ const initialState = {
 };
 
 //redux dev tools enabled
-const store = createStore(reducer, null, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
+export const store = createStore(
+    reducer,
+    null,
+    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
+);
 
-function reducer(state = initialState, action) {
+export function reducer(state = initialState, action) {
     switch (action.type) {
         case 'SAVE':
             return {

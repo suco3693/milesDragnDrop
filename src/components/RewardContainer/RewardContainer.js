@@ -2,7 +2,7 @@ import React from 'react';
 import RewardCard from '../RewardCard/RewardCard';
 import './RewardContainer.css';
 const RewardContainer = (props) => (
-    <div>
+    <div className='RewardContainer'>
         <h3>Rewards</h3>
         <div className='RewardContainer'>
             {props.rewards.map((reward) => (
