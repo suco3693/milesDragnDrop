@@ -29,7 +29,13 @@ class Board extends React.Component {
             categories.push({
                 header: `Category-${val}`,
                 value: `Cat-${val}`,
-                rewards: [null, null, null, null, null],
+                rewards: {
+                    '1': false,
+                    '2': false,
+                    '3': false,
+                    '4': false,
+                    '5': false,
+                },
             });
         }
         return categories;
@@ -45,18 +51,22 @@ class Board extends React.Component {
 
     dropCard(e) {
         e.preventDefault();
-        let data = e.dataTransfer.getData('card');
-        const targetId = e.currentTarget.id.substr(-1);
-        this.updateCatState(data, targetId);
+        let baseCard = e.dataTransfer.getData('card');
+        let cloneCard = document.getElementById(baseCard).cloneNode(true);
+        if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
+            e.currentTarget.appendChild(cloneCard);
+        }
     }
-    updateCatState(cardData, catID) {
-        const categories = this.state.categories;
-        const cardNumber = parseInt(cardData.substr(-1)) - 1;
-        if (categories[catID - 1]) {
-            categories[catID - 1].rewards[cardNumber] = true;
-            this.setState({
-                categories,
-            });
+    checkRewardInCol(targetID, rewardID) {
+        let categories = this.state.categories;
+        let colNum = targetID.substr(-1);
+
+        let rewardNum = rewardID.substr(-1);
+        if (categories[colNum].rewards[rewardNum]) {
+            return true;
+        } else {
+            categories[colNum].rewards[rewardNum] = true;
+            return false;
         }
     }
     render() {
