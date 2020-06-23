@@ -43,6 +43,7 @@ class Board extends React.Component {
 
     startDrag(e) {
         e.dataTransfer.setData('card', e.target.id);
+        console.log(e.target.parentElement);
     }
 
     preventDragDrop(e) {
@@ -52,9 +53,14 @@ class Board extends React.Component {
     dropCard(e) {
         e.preventDefault();
         let baseCard = e.dataTransfer.getData('card');
-        let cloneCard = document.getElementById(baseCard).cloneNode(true);
-        if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
-            e.currentTarget.appendChild(cloneCard);
+        if (baseCard[0] !== 'C') {
+            let cloneCard = this.createCloneReward(baseCard);
+
+            if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
+                e.currentTarget.appendChild(cloneCard);
+            }
+        } else {
+            e.currentTarget.appendChild(document.getElementById(baseCard));
         }
     }
     checkRewardInCol(targetID, rewardID) {
@@ -68,6 +74,26 @@ class Board extends React.Component {
             categories[colNum].rewards[rewardNum] = true;
             return false;
         }
+    }
+    createCloneReward(baseID) {
+        let cloneCard = document.getElementById(baseID).cloneNode(true);
+        let removeButton = this.createRemoveButton();
+        cloneCard.insertAdjacentElement('afterbegin', removeButton);
+        cloneCard.ondragstart = this.startDrag;
+        cloneCard.id = 'C-' + cloneCard.id;
+        return cloneCard;
+    }
+    createRemoveButton() {
+        let removeButton = document.createElement('button');
+        removeButton.innerHTML = 'X';
+        removeButton.onclick = function () {
+            console.log(this.parentElement.parentElement.id, this.parentElement.id);
+            // this.parentElement.remove();
+        };
+        return removeButton;
+    }
+    removeRewardStateInCol(targetID, rewardID) {
+        console.log(targetID, rewardID);
     }
     render() {
         return (
