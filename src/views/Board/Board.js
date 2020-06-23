@@ -12,6 +12,8 @@ class Board extends React.Component {
         this.startDrag = this.startDrag.bind(this);
         this.preventDragDrop = this.preventDragDrop.bind(this);
         this.dropCard = this.dropCard.bind(this);
+        this.removeReward = this.removeReward.bind(this);
+        this.removeRewardInState = this.removeRewardInState.bind(this);
     }
     makeRewards(rewardNumber) {
         const rewards = [];
@@ -43,6 +45,7 @@ class Board extends React.Component {
 
     startDrag(e) {
         e.dataTransfer.setData('card', e.target.id);
+        e.dataTransfer.setData('cat', e.currentTarget.parentElement.id);
     }
 
     preventDragDrop(e) {
@@ -52,6 +55,7 @@ class Board extends React.Component {
     dropCard(e) {
         e.preventDefault();
         let baseCard = e.dataTransfer.getData('card');
+        let startCol = e.dataTransfer.getData('cat');
         if (baseCard[0] !== 'C') {
             let cloneCard = this.createCloneReward(baseCard);
 
@@ -61,6 +65,7 @@ class Board extends React.Component {
         } else {
             if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
                 e.currentTarget.appendChild(document.getElementById(baseCard));
+                this.removeRewardInState(baseCard, startCol);
             }
         }
     }
@@ -69,7 +74,6 @@ class Board extends React.Component {
         let colNum = parseInt(targetID.substr(-1)) - 1;
 
         let rewardNum = rewardID.substr(-1);
-        console.log(colNum);
         if (categories[colNum].rewards[rewardNum]) {
             return true;
         } else {
@@ -88,14 +92,21 @@ class Board extends React.Component {
     createRemoveButton() {
         let removeButton = document.createElement('button');
         removeButton.innerHTML = 'X';
-        removeButton.onclick = function () {
-            console.log(this.parentElement.parentElement.id, this.parentElement.id);
-            // this.parentElement.remove();
-        };
+        removeButton.onclick = this.removeReward;
         return removeButton;
     }
-    removeRewardStateInCol(targetID, rewardID) {
-        console.log(targetID, rewardID);
+    removeReward(e) {
+        let rewardID = e.currentTarget.parentElement.id;
+        let catID = e.currentTarget.parentElement.parentElement.id;
+        this.removeRewardInState(rewardID, catID);
+        e.currentTarget.parentElement.remove();
+    }
+    removeRewardInState(rewardID, catID) {
+        let categories = this.state.categories;
+        let colNum = parseInt(catID.substr(-1)) - 1;
+        let rewardNum = rewardID.substr(-1);
+        categories[colNum].rewards[rewardNum] = false;
+        console.log(categories[colNum]);
     }
     render() {
         return (
