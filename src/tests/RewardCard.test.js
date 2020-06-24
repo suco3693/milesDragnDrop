@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, cleanup } from '@testing-library/react';
+import { render, cleanup, fireEvent, act } from '@testing-library/react';
 import RewardCard from '../components/RewardCard/RewardCard.js';
 
 afterEach(cleanup);
@@ -30,5 +30,4 @@ describe('Reward Card', () => {
         let { container } = render(<RewardCard rewardName={'Reward-1'} />);
         expect(container.firstChild.firstChild).toContainHTML('Reward-1');
     });
-    //Test onDragStart
 });
