@@ -12,6 +12,7 @@ class Board extends React.Component {
             categories: this.makeCategories(5),
             queue: [],
             backQueue: [],
+            transferId: null,
         };
         this.startDrag = this.startDrag.bind(this);
         this.preventDragDrop = this.preventDragDrop.bind(this);
@@ -22,6 +23,8 @@ class Board extends React.Component {
         this.undoMove = this.undoMove.bind(this);
         this.redoMove = this.redoMove.bind(this);
         this.saveRewards = this.saveRewards.bind(this);
+        this.getRewardCardCount = this.getRewardCardCount.bind(this);
+        this.updateRewardCardCount = this.updateRewardCardCount.bind(this);
     }
     makeRewards(rewardNumber) {
         const rewards = [];
@@ -29,6 +32,7 @@ class Board extends React.Component {
             rewards.push({
                 name: `Reward${val}`,
                 value: `RC-${val}`,
+                count: 1,
             });
         }
         return rewards;
@@ -66,6 +70,7 @@ class Board extends React.Component {
         let startCol = e.dataTransfer.getData('cat');
         if (baseCard[0] !== 'C') {
             let cloneCard = this.createCloneReward(baseCard);
+            this.updateRewardCardCount(baseCard, 'up');
 
             if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
                 e.currentTarget.appendChild(cloneCard);
@@ -78,6 +83,20 @@ class Board extends React.Component {
             }
             this.addToQueue(baseCard, e.currentTarget.id, startCol);
         }
+    }
+    getRewardCardCount(baseCardID) {
+        baseCardID = parseInt(baseCardID.substr(-1)) - 1;
+        return this.state.rewards[baseCardID].count;
+    }
+    updateRewardCardCount(baseCardID, direction) {
+        baseCardID = parseInt(baseCardID.substr(-1)) - 1;
+        let rewards = this.state.rewards;
+        if (direction === 'up') {
+            rewards[baseCardID].count++;
+        } else if (direction === 'down') {
+            rewards[baseCardID].count--;
+        }
+        this.setState({ rewards });
     }
     checkRewardInCol(targetID, rewardID) {
         let categories = this.state.categories;
@@ -94,9 +113,10 @@ class Board extends React.Component {
     createCloneReward(baseID) {
         let cloneCard = document.getElementById(baseID).cloneNode(true);
         let removeButton = this.createRemoveButton();
+        let copyID = this.getRewardCardCount(baseID);
         cloneCard.insertAdjacentElement('afterbegin', removeButton);
         cloneCard.ondragstart = this.startDrag;
-        cloneCard.id = 'C-' + cloneCard.id;
+        cloneCard.id = `C-${copyID}-${cloneCard.id}`;
         return cloneCard;
     }
     createRemoveButton() {
@@ -128,12 +148,11 @@ class Board extends React.Component {
         if (queue.length) {
             let recentAction = queue.pop();
             let [rewardID, fromCatID, toCatID] = recentAction;
-            if (fromCatID) {
-                this.removeRewardFromCat(rewardID, fromCatID);
-            }
 
             if (toCatID) {
                 this.addRewardToCat(rewardID, toCatID);
+            } else {
+                this.removeRewardFromCat(rewardID, fromCatID);
             }
             this.addToBackQueue(recentAction);
             //add recentAction to backQueue
@@ -144,13 +163,11 @@ class Board extends React.Component {
         if (backQueue.length) {
             let redoAction = backQueue.pop();
             let [rewardID, fromCatID, toCatID] = redoAction;
-            //remove reward from toCatID
-            if (toCatID) {
-                this.removeRewardFromCat(rewardID, toCatID);
-            }
-            //add reward to fromCatID
+            //add reward to fromCatID and remove if from col to rewards
             if (fromCatID) {
                 this.addRewardToCat(rewardID, fromCatID);
+            } else {
+                this.removeRewardFromCat(rewardID, toCatID);
             }
 
             // // add redoAction to queue
@@ -173,7 +190,10 @@ class Board extends React.Component {
     }
     addRewardToCat(rewardID, toCatID) {
         let category = document.getElementById(toCatID);
-        let rewardCard = this.createCloneReward(rewardID.substr(-4));
+        let rewardCard = document.getElementById(rewardID);
+        if (rewardCard === null) {
+            rewardCard = this.createCloneReward(rewardID.substr(-4));
+        }
         if (!this.checkRewardInCol(toCatID, rewardID)) {
             category.appendChild(rewardCard);
         }
