@@ -73,14 +73,14 @@ class Board extends React.Component {
 
             if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
                 e.currentTarget.appendChild(cloneCard);
+                this.addToQueue(cloneCard.id, e.currentTarget.id, startCol);
             }
-            this.addToQueue(cloneCard.id, e.currentTarget.id, startCol);
         } else {
             if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
                 e.currentTarget.appendChild(document.getElementById(baseCard));
                 this.removeRewardInState(baseCard, startCol);
+                this.addToQueue(baseCard, e.currentTarget.id, startCol);
             }
-            this.addToQueue(baseCard, e.currentTarget.id, startCol);
         }
     }
     getRewardCardCount(baseCardID) {
@@ -154,10 +154,11 @@ class Board extends React.Component {
         if (queue.length) {
             let recentAction = queue.pop();
             let [rewardID, fromCatID, toCatID] = recentAction;
-            // Rewrite as move piece if both fromCatID, toCatID
+            // no toCatID means move from rewards col to board
             if (!toCatID) {
                 this.removeRewardFromCat(rewardID, fromCatID);
             } else {
+                //for delete and board moves just need to add piece back
                 this.buttonMoveCard(rewardID, fromCatID, toCatID);
             }
             this.addToBackQueue(recentAction);
@@ -169,9 +170,12 @@ class Board extends React.Component {
             let redoAction = backQueue.pop();
             let [rewardID, fromCatID, toCatID] = redoAction;
             // Rewrite as move piece if both fromCatID, toCatID
-            this.buttonMoveCard(rewardID, toCatID, fromCatID);
-            //if no toCatID add card to fromCatID and increament by 1
-            // if no fromCatID  remove card and decrease bgy 1?
+            if (!fromCatID) {
+                //if no fromCatID then remove from board
+                this.removeRewardFromCat(rewardID, toCatID);
+            } else {
+                this.buttonMoveCard(rewardID, toCatID, fromCatID);
+            }
 
             // // add redoAction to queue
             this.addToQueue(rewardID, fromCatID, toCatID);
