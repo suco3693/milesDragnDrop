@@ -69,9 +69,8 @@ class Board extends React.Component {
         let baseCard = e.dataTransfer.getData('card');
         let startCol = e.dataTransfer.getData('cat');
         if (baseCard[0] !== 'C') {
-            let cloneCard = this.createCloneReward(baseCard);
-
             if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
+                let cloneCard = this.createCloneReward(baseCard);
                 e.currentTarget.appendChild(cloneCard);
                 this.addToQueue(cloneCard.id, e.currentTarget.id, startCol);
             }
@@ -168,18 +167,27 @@ class Board extends React.Component {
         let backQueue = this.state.backQueue;
         if (backQueue.length) {
             let redoAction = backQueue.pop();
-            let [rewardID, fromCatID, toCatID] = redoAction;
-            // Rewrite as move piece if both fromCatID, toCatID
-            if (!fromCatID) {
-                //if no fromCatID then remove from board
-                this.removeRewardFromCat(rewardID, toCatID);
-            } else {
-                this.buttonMoveCard(rewardID, toCatID, fromCatID);
-            }
+            if (!this.checkRedo(redoAction)) {
+                let [rewardID, fromCatID, toCatID] = redoAction;
+                // Rewrite as move piece if both fromCatID, toCatID
+                if (!fromCatID) {
+                    //if no fromCatID then remove from board
+                    this.removeRewardFromCat(rewardID, toCatID);
+                } else {
+                    this.buttonMoveCard(rewardID, toCatID, fromCatID);
+                }
 
-            // // add redoAction to queue
-            this.addToQueue(rewardID, fromCatID, toCatID);
+                // // add redoAction to queue
+                this.addToQueue(rewardID, fromCatID, toCatID);
+            }
         }
+    }
+    checkRedo(action) {
+        let queueLastAction = this.state.queue[this.state.queue.length - 1];
+        if (!queueLastAction || !action) {
+            return false;
+        }
+        return action[0] === queueLastAction[0] && action[1] === queueLastAction[1] && action[2] === queueLastAction[2];
     }
     removeRewardFromCat(rewardID, fromCatID) {
         let category = document.getElementById(fromCatID);
