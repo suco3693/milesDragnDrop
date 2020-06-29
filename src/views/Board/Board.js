@@ -12,7 +12,6 @@ class Board extends React.Component {
             categories: this.makeCategories(5),
             queue: [],
             backQueue: [],
-            transferId: null,
         };
         this.startDrag = this.startDrag.bind(this);
         this.preventDragDrop = this.preventDragDrop.bind(this);
