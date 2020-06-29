@@ -32,7 +32,7 @@ class Board extends React.Component {
             rewards.push({
                 name: `Reward${val}`,
                 value: `RC-${val}`,
-                count: 1,
+                count: 0,
             });
         }
         return rewards;
@@ -70,7 +70,6 @@ class Board extends React.Component {
         let startCol = e.dataTransfer.getData('cat');
         if (baseCard[0] !== 'C') {
             let cloneCard = this.createCloneReward(baseCard);
-            this.updateRewardCardCount(baseCard, 'up');
 
             if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
                 e.currentTarget.appendChild(cloneCard);
@@ -111,6 +110,7 @@ class Board extends React.Component {
         }
     }
     createCloneReward(baseID) {
+        this.updateRewardCardCount(baseID, 'up');
         let cloneCard = document.getElementById(baseID).cloneNode(true);
         let removeButton = this.createRemoveButton();
         let copyID = this.getRewardCardCount(baseID);
