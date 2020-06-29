@@ -12,6 +12,7 @@ class Board extends React.Component {
             categories: this.makeCategories(5),
             queue: [],
             backQueue: [],
+            transferId: null,
         };
         this.startDrag = this.startDrag.bind(this);
         this.preventDragDrop = this.preventDragDrop.bind(this);
@@ -22,6 +23,8 @@ class Board extends React.Component {
         this.undoMove = this.undoMove.bind(this);
         this.redoMove = this.redoMove.bind(this);
         this.saveRewards = this.saveRewards.bind(this);
+        this.getRewardCardCount = this.getRewardCardCount.bind(this);
+        this.updateRewardCardCount = this.updateRewardCardCount.bind(this);
     }
     makeRewards(rewardNumber) {
         const rewards = [];
@@ -29,6 +32,7 @@ class Board extends React.Component {
             rewards.push({
                 name: `Reward${val}`,
                 value: `RC-${val}`,
+                count: 0,
             });
         }
         return rewards;
@@ -65,19 +69,32 @@ class Board extends React.Component {
         let baseCard = e.dataTransfer.getData('card');
         let startCol = e.dataTransfer.getData('cat');
         if (baseCard[0] !== 'C') {
-            let cloneCard = this.createCloneReward(baseCard);
-
             if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
+                let cloneCard = this.createCloneReward(baseCard);
                 e.currentTarget.appendChild(cloneCard);
+                this.addToQueue(cloneCard.id, e.currentTarget.id, startCol);
             }
-            this.addToQueue(cloneCard.id, e.currentTarget.id, startCol);
         } else {
             if (!this.checkRewardInCol(e.currentTarget.id, baseCard)) {
                 e.currentTarget.appendChild(document.getElementById(baseCard));
                 this.removeRewardInState(baseCard, startCol);
+                this.addToQueue(baseCard, e.currentTarget.id, startCol);
             }
-            this.addToQueue(baseCard, e.currentTarget.id, startCol);
         }
+    }
+    getRewardCardCount(baseCardID) {
+        baseCardID = parseInt(baseCardID.substr(-1)) - 1;
+        return this.state.rewards[baseCardID].count;
+    }
+    updateRewardCardCount(baseCardID, direction) {
+        baseCardID = parseInt(baseCardID.substr(-1)) - 1;
+        let rewards = this.state.rewards;
+        if (direction === 'up') {
+            rewards[baseCardID].count++;
+        } else if (direction === 'down') {
+            rewards[baseCardID].count--;
+        }
+        this.setState({ rewards });
     }
     checkRewardInCol(targetID, rewardID) {
         let categories = this.state.categories;
@@ -92,11 +109,13 @@ class Board extends React.Component {
         }
     }
     createCloneReward(baseID) {
+        this.updateRewardCardCount(baseID, 'up');
         let cloneCard = document.getElementById(baseID).cloneNode(true);
         let removeButton = this.createRemoveButton();
+        let copyID = this.getRewardCardCount(baseID);
         cloneCard.insertAdjacentElement('afterbegin', removeButton);
         cloneCard.ondragstart = this.startDrag;
-        cloneCard.id = 'C-' + cloneCard.id;
+        cloneCard.id = `C-${copyID}-${cloneCard.id}`;
         return cloneCard;
     }
     createRemoveButton() {
@@ -110,6 +129,7 @@ class Board extends React.Component {
         let catID = e.currentTarget.parentElement.parentElement.id;
         this.removeRewardInState(rewardID, catID);
         this.addToQueue(rewardID, '', catID);
+        this.updateRewardCardCount(rewardID.substr(-4), 'down');
         e.currentTarget.parentElement.remove();
     }
     removeRewardInState(rewardID, catID) {
@@ -123,44 +143,51 @@ class Board extends React.Component {
         queue.push([rewardID, toCatId, fromCatID]);
         this.setState({ queue });
     }
+    addToBackQueue(action) {
+        let backQueue = this.state.backQueue;
+        backQueue.push(action);
+        this.setState({ backQueue });
+    }
     undoMove() {
         let queue = this.state.queue;
         if (queue.length) {
             let recentAction = queue.pop();
             let [rewardID, fromCatID, toCatID] = recentAction;
-            if (fromCatID) {
+            // no toCatID means move from rewards col to board
+            if (!toCatID) {
                 this.removeRewardFromCat(rewardID, fromCatID);
-            }
-
-            if (toCatID) {
-                this.addRewardToCat(rewardID, toCatID);
+            } else {
+                //for delete and board moves just need to add piece back
+                this.buttonMoveCard(rewardID, fromCatID, toCatID);
             }
             this.addToBackQueue(recentAction);
-            //add recentAction to backQueue
         }
     }
     redoMove() {
         let backQueue = this.state.backQueue;
         if (backQueue.length) {
             let redoAction = backQueue.pop();
-            let [rewardID, fromCatID, toCatID] = redoAction;
-            //remove reward from toCatID
-            if (toCatID) {
-                this.removeRewardFromCat(rewardID, toCatID);
-            }
-            //add reward to fromCatID
-            if (fromCatID) {
-                this.addRewardToCat(rewardID, fromCatID);
-            }
+            if (!this.checkRedo(redoAction)) {
+                let [rewardID, fromCatID, toCatID] = redoAction;
+                // Rewrite as move piece if both fromCatID, toCatID
+                if (!fromCatID) {
+                    //if no fromCatID then remove from board
+                    this.removeRewardFromCat(rewardID, toCatID);
+                } else {
+                    this.buttonMoveCard(rewardID, toCatID, fromCatID);
+                }
 
-            // // add redoAction to queue
-            this.addToQueue(rewardID, fromCatID, toCatID);
+                // // add redoAction to queue
+                this.addToQueue(rewardID, fromCatID, toCatID);
+            }
         }
     }
-    addToBackQueue(action) {
-        let backQueue = this.state.backQueue;
-        backQueue.push(action);
-        this.setState({ backQueue });
+    checkRedo(action) {
+        let queueLastAction = this.state.queue[this.state.queue.length - 1];
+        if (!queueLastAction || !action) {
+            return false;
+        }
+        return action[0] === queueLastAction[0] && action[1] === queueLastAction[1] && action[2] === queueLastAction[2];
     }
     removeRewardFromCat(rewardID, fromCatID) {
         let category = document.getElementById(fromCatID);
@@ -168,14 +195,21 @@ class Board extends React.Component {
             if (node.id === rewardID) {
                 node.remove();
                 this.removeRewardInState(rewardID, fromCatID);
+                this.updateRewardCardCount(rewardID.substr(-4), 'down');
             }
         });
     }
-    addRewardToCat(rewardID, toCatID) {
+    buttonMoveCard(rewardID, fromCatID, toCatID) {
         let category = document.getElementById(toCatID);
-        let rewardCard = this.createCloneReward(rewardID.substr(-4));
+        let rewardCard = document.getElementById(rewardID);
+        if (!rewardCard) {
+            rewardCard = this.createCloneReward(rewardID.substr(-4));
+        }
         if (!this.checkRewardInCol(toCatID, rewardID)) {
             category.appendChild(rewardCard);
+            if (fromCatID) {
+                this.removeRewardInState(rewardID, fromCatID);
+            }
         }
     }
     saveRewards() {
