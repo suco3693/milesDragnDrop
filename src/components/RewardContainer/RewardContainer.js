@@ -1,8 +1,15 @@
 import React from 'react';
 import RewardCard from '../RewardCard/RewardCard';
 import './RewardContainer.css';
+
+function setContainerHeight(rewardsCount) {
+    return {
+        height: `${75 + rewardsCount * 105}px`,
+    };
+}
+
 const RewardContainer = (props) => (
-    <div className='RewardContainer'>
+    <div className='RewardContainer' style={setContainerHeight(props.rewards.length)}>
         <h3>Rewards</h3>
         <div className='RewardContainer'>
             {props.rewards.map((reward) => (

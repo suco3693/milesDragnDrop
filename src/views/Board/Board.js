@@ -115,6 +115,9 @@ class Board extends React.Component {
         cloneCard.insertAdjacentElement('afterbegin', removeButton);
         cloneCard.ondragstart = this.startDrag;
         cloneCard.id = `C-${copyID}-${cloneCard.id}`;
+        cloneCard.style.position = 'absolute';
+        cloneCard.style.top = this.addPositionToCloneCard(parseInt(cloneCard.id.substr(-1)));
+
         return cloneCard;
     }
     createRemoveButton() {
@@ -122,6 +125,10 @@ class Board extends React.Component {
         removeButton.innerHTML = 'X';
         removeButton.onclick = this.removeReward;
         return removeButton;
+    }
+    addPositionToCloneCard(offsetIdx) {
+        let offset = 105 * (offsetIdx - 1) + 25;
+        return `${offset}px`;
     }
     removeReward(e) {
         let rewardID = e.currentTarget.parentElement.id;
